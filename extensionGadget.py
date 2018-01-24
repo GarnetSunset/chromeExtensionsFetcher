@@ -1,11 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from six.moves.urllib.request import urlretrieve
-import os
-import socket
-import sys
-import time
-import zipfile
+import ctypes, os, socket, subprocess, sys, time, zipfile
 
 localappdata = os.getenv('LocalAPPDATA')
 dir = localappdata+"\Google\Chrome\User Data\Default\Extensions"
@@ -13,6 +9,12 @@ dragNDrop = ''.join(sys.argv[1:])
 names = None
 owd = os.getcwd()
 searchURL = "https://chrome.google.com/webstore/search/"
+
+def admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
 
 if os.path.isfile('chrome.ini'):
     ini = open('chrome.ini', 'r')
@@ -29,11 +31,7 @@ else:
     locationString = 'chromedriver.exe'
 
 if dragNDrop == "":
-    directory_list = list()
-    for root, dirs, files in os.walk(dir, topdown=False):
-        for name in dirs:
-            if len(name) == 32:
-                directory_list.append(name)
+    pass
 else:
     directory_list = []
     with open(dragNDrop) as f:
@@ -44,10 +42,38 @@ else:
     extension = dragNDrop.index(".")
     fileName = dragNDrop[:extension]
 
-if os.path.isfile(socket.gethostname()+"-extensions.txt") and dragNDrop == "":
-    os.remove(socket.gethostname()+"-extensions.txt")
-if dragNDrop != "":
-    os.remove(fileName+"-extensions.txt")
+choice = raw_input("1. Your machine or 2. Someone else's?\n>")
+if choice == "1" and dragNDrop == "":
+    if os.path.isfile(socket.gethostname()+"-extensions.txt") and dragNDrop == "":
+        os.remove(socket.gethostname()+"-extensions.txt")
+    if dragNDrop != "":
+        os.remove(fileName+"-extensions.txt")
+    directory_list = list()
+    hostnameIP = socket.gethostname()
+    for root, dirs, files in os.walk(dir, topdown=False):
+        for name in dirs:
+            if len(name) == 32:
+                directory_list.append(name)
+
+if choice == "2" and dragNDrop == "":
+    hostnameIP = raw_input("Input hostname or IP\n>")
+    username = raw_input("Input username\n>")
+    if admin():
+        batcmd = "dir \"\\\\"+hostnameIP+"\c$\Users\\"+username+"\AppData\Local\Google\Chrome\User Data\Default\Extensions\""
+        result = subprocess.check_output(batcmd, shell=True)
+        directory_list = list()
+        while("<DIR>" in result):
+            dirLoc = result.find("<DIR>")
+            result = result[dirLoc+15:]
+            newLine = result.find("\n")
+            name = result[:newLine]
+            name.rstrip()
+            name = name[:-1]
+            if len(name) == 32:
+                directory_list.append(name)
+            
+    else:
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
 
 driver = webdriver.Chrome(executable_path=(locationString))
 driver.set_window_position(4000, 651)
@@ -65,11 +91,12 @@ for x in directory_list:
 	names = "Unknown ID: " + x
     names = names + "\n"
     if dragNDrop == "":
-        text_file = open(socket.gethostname()+"-extensions.txt", "a")
+        text_file = open(hostnameIP+"-extensions.txt", "a")
     else:
         text_file = open(fileName+"-extensions.txt", "a")
     text_file.write(names)
     text_file.close()
+    names = ""
 
 driver.close()
 
