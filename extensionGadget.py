@@ -22,7 +22,7 @@ if os.path.isfile('chrome.ini'):
 elif os.path.isfile('chromedriver.exe'):
     locationString = 'chromedriver.exe'
 else:
-    response = urlretrieve('https://chromedriver.storage.googleapis.com/2.35/chromedriver_win32.zip','chromedriver.zip')
+    response = urlretrieve('https://chromedriver.storage.googleapis.com/2.36/chromedriver_win32.zip','chromedriver.zip')
 
     zip_ref = zipfile.ZipFile("chromedriver.zip", 'r')
     zip_ref.extractall(owd)
