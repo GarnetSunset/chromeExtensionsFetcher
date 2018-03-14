@@ -1,3 +1,3 @@
-# Chrome Extension Fetcher
+# Other Stuff Fetcher
 
-Simple Program to get your WebStore Program names that are installed without opening Chrome.
+Simple Program to get your other stuff.
