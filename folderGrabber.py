@@ -31,12 +31,6 @@ def makedirlocal(bazinga, choice, dldir, hostnameIP):
                 directory_list.append(x+"/")
             if os.path.isfile(path):
                 directory_list.append(x)
-        #for root, dirs, files in os.walk(bazinga, topdown=False):
-         #   for name in dirs:
-           #     directory_list.append(name+"/")
-          #  if bazinga == dldir:
-            #    for name in files:
-             #       directory_list.append(name)
 
 if choice == "2":
     hostnameIP = raw_input("Input hostname or IP\n>")
