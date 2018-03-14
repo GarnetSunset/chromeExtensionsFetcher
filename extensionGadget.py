@@ -89,14 +89,14 @@ for x in directory_list:
     soup.prettify()
     for tagStuff in soup.find_all('div', {'class': 'a-na-d-w'}):
         names = tagStuff.text
-        print(tagStuff.text)
+        print(tagStuff.text.encode('utf-8'))
     if names == None:
 	names = "Unknown ID: " + x
     if dragNDrop == "":
         text_file = open("Machines/" + hostnameIP + "-extensions.txt", "a")
     else:
         text_file = open("Machines/" + fileName + "-extensions.txt", "a")
-    text_file.write(names+"\n")
+    text_file.write(names.encode('utf-8')+"\n")
     text_file.close()
     names = ""
 
