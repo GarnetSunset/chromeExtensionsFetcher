@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from six.moves.urllib.request import urlretrieve
-import ctypes, os, socket, subprocess, sys, time, zipfile
+import ctypes, os, re, socket, subprocess, sys, time, zipfile
 
 localappdata = os.getenv('LocalAPPDATA')
 dir = localappdata+"\Google\Chrome\User Data\Default\Extensions"
@@ -9,6 +9,9 @@ dragNDrop = ''.join(sys.argv[1:])
 names = None
 owd = os.getcwd()
 searchURL = "https://chrome.google.com/webstore/search/"
+
+if not os.path.exists("Machines"):
+    os.makedirs("Machines")
 
 def admin():
     try:
@@ -41,15 +44,13 @@ else:
                 directory_list.append(line)
     extension = dragNDrop.index(".")
     fileName = dragNDrop[:extension]
+    open("Machines/" + fileName + "-extensions.txt", 'w').close()
 
 choice = raw_input("1. Your machine or 2. Someone else's?\n>")
 if choice == "1" and dragNDrop == "":
-    if os.path.isfile(socket.gethostname()+"-extensions.txt") and dragNDrop == "":
-        os.remove(socket.gethostname()+"-extensions.txt")
-    if dragNDrop != "":
-        os.remove(fileName+"-extensions.txt")
     directory_list = list()
     hostnameIP = socket.gethostname()
+    open("Machines/" + hostnameIP + "-extensions.txt", 'w').close()
     for root, dirs, files in os.walk(dir, topdown=False):
         for name in dirs:
             if len(name) == 32:
@@ -58,6 +59,7 @@ if choice == "1" and dragNDrop == "":
 if choice == "2" and dragNDrop == "":
     hostnameIP = raw_input("Input hostname or IP\n>")
     username = raw_input("Input username\n>")
+    open("Machines/" + hostnameIP + "-extensions.txt", 'w').close()
     if admin():
         batcmd = "dir \"\\\\"+hostnameIP+"\c$\Users\\"+username+"\AppData\Local\Google\Chrome\User Data\Default\Extensions\""
         result = subprocess.check_output(batcmd, shell=True)
@@ -87,14 +89,14 @@ for x in directory_list:
     soup.prettify()
     for tagStuff in soup.find_all('div', {'class': 'a-na-d-w'}):
         names = tagStuff.text
+        print(tagStuff.text)
     if names == None:
 	names = "Unknown ID: " + x
-    names = names + "\n"
     if dragNDrop == "":
-        text_file = open(hostnameIP+"-extensions.txt", "a")
+        text_file = open("Machines/" + hostnameIP + "-extensions.txt", "a")
     else:
-        text_file = open(fileName+"-extensions.txt", "a")
-    text_file.write(names)
+        text_file = open("Machines/" + fileName + "-extensions.txt", "a")
+    text_file.write(names+"\n")
     text_file.close()
     names = ""
 
@@ -111,5 +113,22 @@ if os.path.isfile("chromedriver.zip"):
         os.remove("chromedriver.zip")
     except:
         print("")
+
+if dragNDrop == "":
+        with open("Machines/" + hostnameIP + "-extensions.txt", 'r') as myfile:
+            data=myfile.read().replace('\n\n', '\n')
+            data=data.replace('\n\n', '\n')
+            myfile.close()
+            with open("Machines/" + hostnameIP + "-extensions.txt", 'w') as newfile:
+                newfile.write(data)
+                newfile.close()
+else:
+    with open("Machines/" + fileName + "-extensions.txt", 'r') as myfile:
+        data=myfile.read().replace('\n\n', '\n')
+        data=data.replace('\n\n', '\n')
+        myfile.close()
+        with open("Machines/" + fileName + "-extensions.txt", 'w') as newfile:
+            newfile.write(data)
+            newfile.close()
 
 print("All Done")
