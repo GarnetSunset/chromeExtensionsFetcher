@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from six.moves.urllib.request import urlretrieve
-import ctypes, os, re, socket, subprocess, sys, time, zipfile
+import csv, ctypes, os, re, socket, subprocess, sys, time, zipfile
 
 userfolder = os.getenv('USERNAME')
 dldir = "C:\Users\\" + userfolder +"\Downloads"
@@ -8,6 +8,12 @@ pfdir = "C:\Program Files"
 pfdir86 = "C:\Program Files (x86)"
 names = ""
 owd = os.getcwd()
+dlEnum = 0
+pfEnum = 0
+pf86Enum = 0
+done1 = 0
+done2 = 0
+done3 = 0
 
 if not os.path.exists("Machines"):
     os.makedirs("Machines")
@@ -66,37 +72,64 @@ def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86):
         del directory_list[0:3]
 
 
-
 open("Machines/" + hostnameIP + "-dirsnfiles.txt", 'w').close()
+open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'w').close()
 
 text_file = open("Machines/" + hostnameIP + "-dirsnfiles.txt", "a")
 
-text_file.write("------------Downloads------------\n")
-
-makedirlocal(bazinga=dldir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
-for x in directory_list:
-    names = names + x
-    names=names.decode('utf-8','ignore').encode("utf-8")
-    text_file.write(names+"\n")
-    names = ""
-
-text_file.write("------------ProgramFiles------------\n")
-
-makedirlocal(bazinga=pfdir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
-for x in directory_list:
-    names = names + x
-    names=names.decode('utf-8','ignore').encode("utf-8")
-    text_file.write(names.decode('utf-8').strip()+"\n")
-    names = ""
+with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
+    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
     
-text_file.write("------------ProgramFilesx86------------\n")
+    text_file.write("------------Downloads------------\n")
+    makedirlocal(bazinga=dldir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    dlList = directory_list
+    for x in directory_list:
+        names = names + x
+        names=names.decode('utf-8','ignore').encode("utf-8")
+        text_file.write(names+"\n")
+        names = ""
 
-makedirlocal(bazinga=pfdir86, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
-for x in directory_list:
-    names = names + x
-    names=names.decode('utf-8','ignore').encode("utf-8")
-    text_file.write(names.decode('utf-8').strip()+"\n")
-    names = ""
+    text_file.write("------------ProgramFiles------------\n")
+    makedirlocal(bazinga=pfdir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    pfList = directory_list
+    for x in directory_list:
+        names = names + x
+        names=names.decode('utf-8','ignore').encode("utf-8")
+        text_file.write(names+"\n")
+        names = ""
+        
+    text_file.write("------------ProgramFilesx86------------\n")
+    makedirlocal(bazinga=pfdir86, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    for x in directory_list:
+        names = names + x
+        names=names.decode('utf-8','ignore').encode("utf-8")
+        text_file.write(names+"\n")
+        names = ""
+    wr.writerow(['Downloads', 'ProgramFiles', 'ProgramFilesx86'])
+    dlLength = len(dlList)
+    pfLength = len(pfList)
+    pf86Length = len(directory_list)
+    while(done1 != 1 or done2 != 1 or done3 != 1):
+        wr.writerow([dlList[dlEnum],pfList[pfEnum],directory_list[pf86Enum]])
+        dlEnum += 1
+        pfEnum += 1
+        pf86Enum += 1
+        if(dlEnum == dlLength):
+            dlList = [""]
+            dlEnum = 0
+            dlLength = 1
+            done1 = 1
+        if(pfEnum == pfLength):
+            pfList = [""]
+            pfEnum = 0
+            pfLength = 1
+            done2 = 1
+        if(pf86Enum == pf86Length):
+            directory_list = [""]
+            pf86Enum = 0
+            pf86Length = 1
+            done3 = 1
+        
 
 text_file.close()
 
