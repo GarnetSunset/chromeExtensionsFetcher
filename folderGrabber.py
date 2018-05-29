@@ -6,14 +6,17 @@ userfolder = os.getenv('USERNAME')
 dldir = "C:\Users\\" + userfolder +"\Downloads"
 pfdir = "C:\Program Files"
 pfdir86 = "C:\Program Files (x86)"
+WinStore = pfdir + "\WindowsApps"
 names = ""
 owd = os.getcwd()
 dlEnum = 0
 pfEnum = 0
 pf86Enum = 0
+WinSEnum = 0
 done1 = 0
 done2 = 0
 done3 = 0
+done4 = 0
 
 if not os.path.exists("Machines"):
     os.makedirs("Machines")
@@ -32,7 +35,7 @@ if choice == "2":
 else:
     hostnameIP = socket.gethostname()
 
-def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86):
+def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86, WinStore):
     global directory_list
     directory_list = list()
     dirLoc = 0
@@ -53,6 +56,8 @@ def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86):
                 batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files\""
             if bazinga == pfdir86:
                 batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files (x86)\""
+            if bazinga == WinStore:
+                batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files\WindowsApps\""
             result = subprocess.check_output(batcmd, shell=True)
             directory_list = list()
             while(len(result)>30):
@@ -81,7 +86,7 @@ with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
     wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
     
     text_file.write("------------Downloads------------\n")
-    makedirlocal(bazinga=dldir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    makedirlocal(bazinga=dldir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
     dlList = directory_list
     for x in directory_list:
         names = names + x
@@ -90,7 +95,7 @@ with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
         names = ""
 
     text_file.write("------------ProgramFiles------------\n")
-    makedirlocal(bazinga=pfdir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    makedirlocal(bazinga=pfdir, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
     pfList = directory_list
     for x in directory_list:
         names = names + x
@@ -99,21 +104,34 @@ with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
         names = ""
         
     text_file.write("------------ProgramFilesx86------------\n")
-    makedirlocal(bazinga=pfdir86, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86)
+    makedirlocal(bazinga=pfdir86, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
+    pfList86 = directory_list
     for x in directory_list:
         names = names + x
         names=names.decode('utf-8','ignore').encode("utf-8")
         text_file.write(names+"\n")
         names = ""
-    wr.writerow(['Downloads', 'ProgramFiles', 'ProgramFilesx86'])
+
+    text_file.write("------------WinStore------------\n")
+    makedirlocal(bazinga=WinStore, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
+    WinSList = directory_list
+    for x in directory_list:
+        names = names + x
+        names=names.decode('utf-8','ignore').encode("utf-8")
+        text_file.write(names+"\n")
+        names = ""
+    
+    wr.writerow(['Downloads', 'ProgramFiles', 'ProgramFilesx86', 'WinStore'])
     dlLength = len(dlList)
     pfLength = len(pfList)
-    pf86Length = len(directory_list)
-    while(done1 != 1 or done2 != 1 or done3 != 1):
-        wr.writerow([dlList[dlEnum],pfList[pfEnum],directory_list[pf86Enum]])
+    pf86Length = len(pfList86)
+    WinSLength = len(WinSList)
+    while(done1 != 1 or done2 != 1 or done3 != 1 or done4 != 1):
+        wr.writerow([dlList[dlEnum],pfList[pfEnum],pfList86[pf86Enum],WinSList[WinSEnum]])
         dlEnum += 1
         pfEnum += 1
         pf86Enum += 1
+        WinSEnum += 1
         if(dlEnum == dlLength):
             dlList = [""]
             dlEnum = 0
@@ -125,12 +143,16 @@ with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
             pfLength = 1
             done2 = 1
         if(pf86Enum == pf86Length):
-            directory_list = [""]
+            pfList86 = [""]
             pf86Enum = 0
             pf86Length = 1
             done3 = 1
+        if(WinSEnum == WinSLength):
+            WinSList = [""]
+            WinSEnum = 0
+            WinSLength = 1
+            done4 = 1
         
-
 text_file.close()
 
 with open("Machines/" + hostnameIP + "-dirsnfiles.txt", 'r') as myfile:
