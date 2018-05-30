@@ -1,13 +1,15 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from six.moves.urllib.request import urlretrieve
-import ctypes, os, re, socket, subprocess, sys, time, zipfile
+import ctypes, os, re, json, socket, subprocess, sys, time, zipfile
 
 localappdata = os.getenv('LocalAPPDATA')
 dir = localappdata+"\Google\Chrome\User Data\Default\Extensions"
 dragNDrop = ''.join(sys.argv[1:])
+local = False
 names = None
 owd = os.getcwd()
+returnMan = []
 searchURL = "https://chrome.google.com/webstore/search/"
 
 if not os.path.exists("Machines"):
@@ -73,34 +75,45 @@ if choice == "2" and dragNDrop == "":
             name = name[:-1]
             if len(name) == 32:
                 directory_list.append(name)
-            
+
     else:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+if choice == "2":
+    driver = webdriver.Chrome(executable_path=(locationString))
+    driver.set_window_position(4000, 651)
+    driver.set_page_load_timeout(600)
 
-driver = webdriver.Chrome(executable_path=(locationString))
-driver.set_window_position(4000, 651)
-driver.set_page_load_timeout(600)
+    for x in directory_list:
+        driver.get(searchURL+x)
+        time.sleep(2)
+        requestRec = driver.page_source
+        soup = BeautifulSoup(requestRec, 'lxml')
+        soup.prettify()
+        for tagStuff in soup.find_all('div', {'class': 'a-na-d-w'}):
+            names = tagStuff.text
+            print(tagStuff.text.encode('utf-8'))
+        if names == None:
+    	       names = "Unknown ID: " + x
+        if dragNDrop == "":
+            text_file = open("Machines/" + hostnameIP + "-extensions.txt", "a")
+        else:
+            text_file = open("Machines/" + fileName + "-extensions.txt", "a")
+        text_file.write(names.encode('utf-8')+"\n")
+        text_file.close()
+        names = ""
 
-for x in directory_list:
-    driver.get(searchURL+x)
-    time.sleep(2)
-    requestRec = driver.page_source
-    soup = BeautifulSoup(requestRec, 'lxml')
-    soup.prettify()
-    for tagStuff in soup.find_all('div', {'class': 'a-na-d-w'}):
-        names = tagStuff.text
-        print(tagStuff.text.encode('utf-8'))
-    if names == None:
-	names = "Unknown ID: " + x
-    if dragNDrop == "":
-        text_file = open("Machines/" + hostnameIP + "-extensions.txt", "a")
-    else:
-        text_file = open("Machines/" + fileName + "-extensions.txt", "a")
-    text_file.write(names.encode('utf-8')+"\n")
-    text_file.close()
-    names = ""
-
-driver.close()
+    driver.close()
+else:
+    local = True
+    for dirpath, subdirs, files in os.walk(dir):
+        for x in files:
+            if x == "manifest.json":
+                with open(dirpath+"\manifest.json") as f:
+                    herewego = json.load(f)
+                if("__MSG_appName__" != herewego["name"]):
+                    if("__MSG_APP_NAME__" != herewego["name"]):
+                        if("__MSG_extName__" != herewego["name"]):
+                                returnMan.append(herewego["name"])
 
 if os.path.isfile("debug.log"):
     try:
@@ -120,7 +133,11 @@ if dragNDrop == "":
             data=data.replace('\n\n', '\n')
             myfile.close()
             with open("Machines/" + hostnameIP + "-extensions.txt", 'w') as newfile:
-                newfile.write(data)
+                if(local == True):
+                    for x in returnMan:
+                        newfile.write(x+"\n")
+                else:
+                    newfile.write(data)
                 newfile.close()
 else:
     with open("Machines/" + fileName + "-extensions.txt", 'r') as myfile:
