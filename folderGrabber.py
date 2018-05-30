@@ -43,13 +43,17 @@ def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86, WinStore):
     directory_list = list()
     dirLoc = 0
     if choice == "1":
-        for x in os.listdir(bazinga):
-            print(x)
-            path = os.path.join(bazinga, x)
-            if os.path.isdir(path):
-                directory_list.append(x+"/")
-            if os.path.isfile(path):
-                directory_list.append(x)
+        try:
+            for x in os.listdir(bazinga):
+                print(x)
+                path = os.path.join(bazinga, x)
+                if os.path.isdir(path):
+                    directory_list.append(x+"/")
+                if os.path.isfile(path):
+                    directory_list.append(x)
+        except:
+            directory_list.append("You don't have admin rights")
+            print("You don't have admin rights, so I can't show you these")
 
     if choice == "2":
         if admin():
