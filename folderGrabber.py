@@ -13,10 +13,13 @@ dlEnum = 0
 pfEnum = 0
 pf86Enum = 0
 WinSEnum = 0
+Win7 = False
 done1 = 0
 done2 = 0
 done3 = 0
 done4 = 0
+deleteList = ['Delete', 'bytes free']
+#Use This More Often#
 
 if not os.path.exists("Machines"):
     os.makedirs("Machines")
@@ -57,18 +60,22 @@ def makedirlocal(bazinga, choice, dldir, pfdir, pfdir86, WinStore):
             if bazinga == pfdir86:
                 batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files (x86)\""
             if bazinga == WinStore:
-                batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files\WindowsApps\""
-            result = subprocess.check_output(batcmd, shell=True)
-            directory_list = list()
-            while(len(result)>30):
-                result = result[dirLoc+40:]
-                newLine = result.find("\n")
-                name = result[:newLine]
-                name.rstrip()
-                name = name[:-1]
-                dirLoc = result.find("\n")
-                if len(name) > 2:
-                    directory_list.append(name)
+                batcmd = "dir \"\\\\" + hostnameIP + "\c$\Program Files\WindowsApps\""    
+            try:
+                result = subprocess.check_output(batcmd, shell=True)
+                directory_list = list()
+                while(len(result)>30):
+                    result = result[dirLoc+40:]
+                    newLine = result.find("\n")
+                    name = result[:newLine]
+                    name.rstrip()
+                    name = name[:-1]
+                    dirLoc = result.find("\n")
+                    if len(name) > 2:
+                        directory_list.append(name)
+            except subprocess.CalledProcessError:
+                Win7 = True
+            
                 
         else:
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
@@ -112,14 +119,21 @@ with open("Machines/" + hostnameIP + "-dirsnfiles.csv", 'wb') as myfile:
         text_file.write(names+"\n")
         names = ""
 
-    text_file.write("------------WinStore------------\n")
-    makedirlocal(bazinga=WinStore, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
-    WinSList = directory_list
-    for x in directory_list:
-        names = names + x
-        names=names.decode('utf-8','ignore').encode("utf-8")
-        text_file.write(names+"\n")
-        names = ""
+    if(Win7 == False):
+        text_file.write("------------WinStore------------\n")
+        makedirlocal(bazinga=WinStore, choice=choice, dldir=dldir, pfdir=pfdir, pfdir86=pfdir86, WinStore=WinStore)
+        for wordX in directory_list:
+            for x in deleteList:
+                if x in wordX:
+                    directory_list.remove(wordX)
+        WinSList = directory_list
+        for x in directory_list:
+            names = names + x
+            names=names.decode('utf-8','ignore').encode("utf-8")
+            text_file.write(names+"\n")
+            names = ""
+    else:
+        WinSList = ['Windows 7 User', 'No Win10 Store']
     
     wr.writerow(['Downloads', 'ProgramFiles', 'ProgramFilesx86', 'WinStore'])
     dlLength = len(dlList)
