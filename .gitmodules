@@ -1,0 +1,3 @@
+[submodule "chromeDriverDownloader"]
+	path = chromeDriverDownloader
+	url = https://github.com/GarnetSunset/chromeDriverDownloader

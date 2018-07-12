@@ -4,7 +4,7 @@ from six.moves.urllib.request import urlretrieve
 import ctypes, os, re, json, socket, subprocess, sys, time, zipfile
 
 localappdata = os.getenv('LocalAPPDATA')
-dir = localappdata+"\Google\Chrome\User Data\Default\Extensions"
+dir = localappdata + r"\Google\Chrome\User Data\Default\Extensions"
 dragNDrop = ''.join(sys.argv[1:])
 local = False
 names = None
@@ -63,7 +63,7 @@ if choice == "2" and dragNDrop == "":
     username = raw_input("Input username\n>")
     open("Machines/" + hostnameIP + "-extensions.txt", 'w').close()
     if admin():
-        batcmd = "dir \"\\\\"+hostnameIP+"\c$\Users\\"+username+"\AppData\Local\Google\Chrome\User Data\Default\Extensions\""
+        batcmd = r"dir \"\\\\"+hostnameIP+r"\c$\Users\\"+username+r"\AppData\Local\Google\Chrome\User Data\Default\Extensions\""
         result = subprocess.check_output(batcmd, shell=True)
         directory_list = list()
         while("<DIR>" in result):
